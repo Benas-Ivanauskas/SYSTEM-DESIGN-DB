@@ -77,3 +77,18 @@ This repository contains notes, resources, and practical exercises on **database
 ---
 
 ## 🛠 HANDS-ON TASKS
+
+1. POSTGRES
+
+Spin up Postgres in Docker, enable PostGIS (CREATE EXTENSION postgis), and keep the simple users / events API: GET /recent-events/:userId?limit=N for the latest events, and POST /events/batch that inserts multiple events in one transaction (rollback on any error). In the events table add a flexible properties JSONB and a geom column (a point for lat/lon). Add a small /nearby?lat=&lon=&km= endpoint that uses PostGIS to find events near a location—create the point with ST_MakePoint(lon,lat), check radius with ST_DWithin(geom, point, km*1000), and (optionally) sort by ST_Distance(geom, point); add a geospatial index on geom to keep it snappy. Also add an index on a field of the event jsonb column. Use explain analyze to make sure that your queries execute with indexes
+
+ 
+2. MONGO
+
+Build a small Node.js app + Mongo (docker). Collections: Posts + Comments + Tags. Let Posts embed Tags but store Comments in separate collection. Implement: (a) fetch posts with tags + recent comments; (b) full-text search on posts' content; (c) update operation that moves a post to “archived” (collection or status) AND decrement a counter in the Tags collection (transaction across two collections).
+
+ 
+3. REDIS
+
+Spin up Redis in Docker and build a tiny Node.js app with just three bits: (1) sessions with TTL — on login, create sess:{token} with a 30-min expiry and refresh it on each /me call to show sliding sessions; (2) a leaderboard using a sorted set — POST /score adds points and GET /top returns the top 10 via ZINCRBY/ZREVRANGE; and (3) a simple cache — GET /posts/recent first checks cache:recentPosts, else computes and stores it with SETEX (e.g., 60s), and POST /posts deletes that key to invalidate.
+ 
